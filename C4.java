@@ -25,40 +25,16 @@ public class C4
         turno = 0;
     }
     
-//    public int Moviment (Tauler t, int color){
-//        int col;
-//        if(turno >= 2){
-//                col = (int)(t.getMida() * Math.random());
-//                while (!t.movpossible(col)) {
-//                    col = (int)(t.getMida() * Math.random());
-//                    
-//                }
-//        }
-//        else if (turno == 1){
-//            col = t.getMida()/2 + 1;
-//            ++turno;
-//        }
-//        else{
-//            col = t.getMida()/2;
-//            ++turno;
-//        }
-//        
-//        return col;
-//        
-//    }
-//    
-    public int minimax (int i, Tauler t, int color, boolean seguir){
+    public int minimax (int i, Tauler t, int color){
         Tauler actual = new Tauler (t);
         //boolean seguir = false;
-        int col = (int)(t.getMida() * Math.random());
         if(t.movpossible(i)){
                 //Full attack
                     actual = new Tauler(t);
                     actual.afegeix(i, color);
                     if (actual.solucio(i, color)){
-                        seguir = false;
                         turno = 0;
-                        col = i;
+                        return i;
                     
                     }
                     //Full counter
@@ -66,18 +42,16 @@ public class C4
                         actual = new Tauler(t);
                         actual.afegeix(i, color*-1);
                         if(actual.solucio(i, color*-1)){
-                            col = i;
+                            return i;
                         }
                     }      
                 }
-        return col;
+        return -1;
     }
-    @Override
-    public int moviment(Tauler t, int color) {
-        //color 1 = rojo
-        //color -1 = azul
-        //comprueba primer turno
-        if(color == 1){
+    
+    
+   public void primerturno(Tauler t, int color){
+         if(color == 1){
             boolean acaba = false;
             for(int i = 0; i < t.getMida() && !acaba; ++i){
                if(t.getColor(0, i) != 0){
@@ -87,13 +61,12 @@ public class C4
             if(!acaba){
                 turno = 0;
             }
-        }
-        else{
+        }else{
             int acaba = 0;
             for(int i = 0; i < 2 && acaba <= 1; ++i){
                 for(int j = 0; j < t.getMida() && acaba <= 1; ++j){
                     if(t.getColor(0, i) != 0){
-                    ++acaba;
+                        ++acaba;
                     }
                 }
             }
@@ -101,42 +74,51 @@ public class C4
                 turno = 0;
             }
         }
-        
-        int col;
-        boolean seguir = true;
-        if(turno >= 2){
-            Tauler actual = new Tauler (t);
-            col = (int)(t.getMida() * Math.random());
-            for (int i = 0; i < t.getMida() && seguir; i++) {
-                col = minimax (i, t, color, seguir);
-//                if(t.movpossible(i)){
-//                //Full attack
-//                    actual = new Tauler(t);
-//                    actual.afegeix(i, color);
-//                    if (actual.solucio(i, color)){
-//                        seguir = false;
-//                        turno = 0;
-//                        col = i;
-//                    
-//                    }
-//                    //Full counter
-//                    else{
-//                        actual = new Tauler(t);
-//                        actual.afegeix(i, color*-1);
-//                        if(actual.solucio(i, color*-1)){
-//                            col = i;
-//                        }
-//                    }      
-//                }
-            } 
-        }
-        else if (turno == 1){
-            col = t.getMida()/2 - 1;
-            ++turno;
+   } 
+    
+   
+   public int primeras2jugadas(Tauler t){
+       ++turno;
+        if (turno == 1){
+            return t.getMida()/2 - 1;
         }
         else{
-            col = t.getMida()/2;
-            ++turno;
+            return t.getMida()/2;
+        }
+   }
+   
+   public int choosemove(Tauler t, int color){
+            int col=-1;
+            for (int j = 0; j < 8; j++) {
+                int aux=-1;
+                for (int i = 0; i < t.getMida() && aux==-1; i++) {
+                    aux = minimax (i, t, color);
+                }
+                if(aux==-1){
+                    aux = (int)(t.getMida() * Math.random());
+                    while (!t.movpossible(col)) {
+                      aux = (int)(t.getMida() * Math.random());
+                    }
+                }
+                if(j==0){
+                    col=aux;
+                }
+            }
+            return col;
+   }
+    
+    @Override
+    public int moviment(Tauler t, int color) {
+        //color 1 = rojo
+        //color -1 = azul
+        //comprueba primer turno
+        primerturno(t,color);
+        
+        int col;
+        if(turno >= 2){
+            col=choosemove(t,color);
+        }else{
+            col=primeras2jugadas(t);
         }
         estado_anterior = new Tauler(t);
 
