@@ -82,25 +82,27 @@ public class C4
         return heuristica;
     }
     
-    public int min(Tauler t, int color, int profundidad, int True_Color){
+    public int min(Tauler t,Tauler asenemy, int color, int profundidad, int True_Color){
         int heuristica = 999999;
         for(int i = 0; i < t.getMida(); ++i){
             if(t.movpossible(i)){
                 Tauler aux = new Tauler (t);
                 aux.afegeix(i, color);
-                heuristica = Math.min (heuristica, minimax2(profundidad-1, t, color*-1, True_Color, i));
+                asenemy = new Tauler (t);
+                heuristica = Math.min (heuristica, minimax2(profundidad-1, t, asenemy, color*-1, True_Color, i));
             }
         }
         return heuristica;
     }
     
-    public int max(Tauler t, int color, int profundidad, int True_Color){
+    public int max(Tauler t,Tauler asenemy, int color, int profundidad, int True_Color){
             int heuristica = -999999;  
                 for(int i = 0; i < t.getMida(); ++i){
                     if(t.movpossible(i)){
                         Tauler aux = new Tauler (t);
                         aux.afegeix(i, color);
-                        int miniaux = minimax2(profundidad-1, t, color*-1, True_Color, i);
+                        asenemy = new Tauler (t);
+                        int miniaux = minimax2(profundidad-1, t,asenemy, color*-1, True_Color, i);
                         heuristica = Math.max (heuristica, miniaux );  
                         
                     }
@@ -108,16 +110,18 @@ public class C4
             return heuristica;
     }
     
-    public int h(Tauler t,int color, int col){
+    public int h(Tauler t,Tauler asenemy,int color, int col){
             int heuristica = 0;
             Tauler auxi = new Tauler(t);
             Tauler auxi2 = new Tauler(t);
             auxi.afegeix(col, color*-1);
             auxi2.afegeix(col, color);
+            
             if(t.solucio(col, color)){
                 heuristica = 3;
-            }
-            else if(t.solucio(col, color*-1)){
+            }else if(asenemy.solucio(col,color*-1)){
+                heuristica = -3;
+            }else if(t.solucio(col, color*-1)){
                 heuristica = 2;
             }     
             else if(auxi.solucio(col, color*-1)){
@@ -125,49 +129,24 @@ public class C4
             }
             else if(auxi2.solucio(col, color)){
                 heuristica = -2;
-            }
-//            else{
-//                heuristica = 0;
-//                int auxii_heu;
-//                int cont = 0;
-//                for(int i = 2; i < t.getMida()- 2 && cont < t.getMida(); i+=2){
-//                    cont = 0;
-//                    for(int j = 2; j < t.getMida()- 2 && cont < t.getMida(); j+=2){
-//                        if(t.getColor(i, j) == t.getColor(i+1, j) && (t.getColor(i+2, j) == 0) && t.getColor(i, j) != 0){ //horizontal derecha
-//                            cont+=2;
-//                        }
-//                        else if(t.getColor(i, j) == t.getColor(i-1, j) && (t.getColor(i-2, j) == 0) && t.getColor(i, j) != 0){ //horizontal izquierda
-//                            cont+=2;
-//                        }
-//                        else if(t.getColor(i+2, j) == t.getColor(i+1, j) && (t.getColor(i, j) == 0) /* && esquinas*/ && t.getColor(i+2, j) != 0){ //horizontal derecha
-//                            cont+=2;
-//                        }
-//                        else if(t.getColor(i-2, j) == t.getColor(i-1, j) && (t.getColor(i, j) == 0) /* && esquinas*/ && t.getColor(i-2, j) != 0){ //horizontal izquierda
-//                            cont+=2;
-//                        }
-//                        t.getColor(i, j);
-//                        auxii_heu = evita3 (t, i, j);
-//                        if(heuristica == 0){
-//                            heuristica = auxii_heu;
-//                        }
-//                        else if((int)(t.getMida() * Math.random())%2 == 0 && auxii_heu != 0){
-//                            heuristica = auxii_heu;
-//                        }
-//                    }
-//                }
+            }else if()
+//          else{
+//CODIGO AL FINAL
 //            }
             return heuristica;
     }
     
-    public int minimax2 (int profundidad, Tauler t, int color, int True_Color, int col){
+    public int minimax2 (int profundidad, Tauler t,Tauler asenemy, int color, int True_Color, int col){
         int heuristica = 0;
-        if(profundidad == 0 || t.solucio(col, color) || t.solucio(col, color*-1) || !t.espotmoure()){
-            heuristica= h(t,color,col);
+        asenemy = new Tauler (t);
+        asenemy.afegeix(col, color*-1);
+        if(profundidad == 0 || t.solucio(col, color) || t.solucio(col, color*-1) || asenemy.solucio(col, color*-1) || asenemy.solucio(col, color) || !t.espotmoure()){
+            heuristica= h(t,asenemy,color,col);
         }else{
             if(True_Color == color){ //max
-                heuristica= max(t, color, profundidad, True_Color);
+                heuristica= max(t,t, color, profundidad, True_Color);
             }else{ //min
-                heuristica= min(t, color, profundidad, True_Color);
+                heuristica= min(t,t, color, profundidad, True_Color);
             }
         } 
         return heuristica;
@@ -224,9 +203,10 @@ public class C4
        boolean be_aleatorian=((int)(t.getMida() * Math.random()))%2 == 0;
        for(int i = 0; i < t.getMida(); ++i){
            if(t.movpossible(i)){
-                Tauler aux = new Tauler (t);
-                aux.afegeix(i, color);
-                heuristica_aux = minimax2(profundidad, aux, color, color, i);
+                Tauler asme = new Tauler (t);
+                asme.afegeix(i, color);
+                Tauler asenemy = new Tauler (t);
+                heuristica_aux = minimax2(profundidad, asme,asenemy, color, color, i);
                 if(heuristica_aux > heuristica){
                     heuristica = heuristica_aux;
                     col = i;
@@ -252,3 +232,32 @@ public class C4
         return col;
     }
 }
+
+//                heuristica = 0;
+//                int auxii_heu;
+//                int cont = 0;
+//                for(int i = 2; i < t.getMida()- 2 && cont < t.getMida(); i+=2){
+//                    cont = 0;
+//                    for(int j = 2; j < t.getMida()- 2 && cont < t.getMida(); j+=2){
+//                        if(t.getColor(i, j) == t.getColor(i+1, j) && (t.getColor(i+2, j) == 0) && t.getColor(i, j) != 0){ //horizontal derecha
+//                            cont+=2;
+//                        }
+//                        else if(t.getColor(i, j) == t.getColor(i-1, j) && (t.getColor(i-2, j) == 0) && t.getColor(i, j) != 0){ //horizontal izquierda
+//                            cont+=2;
+//                        }
+//                        else if(t.getColor(i+2, j) == t.getColor(i+1, j) && (t.getColor(i, j) == 0) /* && esquinas*/ && t.getColor(i+2, j) != 0){ //horizontal derecha
+//                            cont+=2;
+//                        }
+//                        else if(t.getColor(i-2, j) == t.getColor(i-1, j) && (t.getColor(i, j) == 0) /* && esquinas*/ && t.getColor(i-2, j) != 0){ //horizontal izquierda
+//                            cont+=2;
+//                        }
+//                        t.getColor(i, j);
+//                        auxii_heu = evita3 (t, i, j);
+//                        if(heuristica == 0){
+//                            heuristica = auxii_heu;
+//                        }
+//                        else if((int)(t.getMida() * Math.random())%2 == 0 && auxii_heu != 0){
+//                            heuristica = auxii_heu;
+//                        }
+//                    }
+//                }
