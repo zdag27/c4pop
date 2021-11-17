@@ -64,7 +64,6 @@ public class C4
         int maxdehe=0;
         int maxhhe=0;
         int maxvhe=0;  
-        
         for (int i = 0; i < asme.getMida(); i++) {
             for (int j = 0; j < asme.getMida(); j++) {
                 if(asme.getColor(i, j)==color){
@@ -72,40 +71,48 @@ public class C4
                         if(asme.getColor(i+1, j)==asme.getColor(i, j) ){
                             v+=1;
                         }else{
-                            if(maxvme<v){
-                                maxvme=v;
+                            if(asme.getColor(i+1, j)!=0){
+                                if(maxvme<v){
+                                    maxvme=v;
+                                }
+                                v=0;
                             }
-                            v=0;
                         }
                     }
                     if(j<asme.getMida()-1){
                         if(asme.getColor(i, j+1)==asme.getColor(i, j) ){
                             h+=1;
                         }else{
-                            if(maxhme<h){
-                                maxhme=h;
+                            if(asme.getColor(i, j+1)!=0){
+                                if(maxhme<h){
+                                    maxhme=h;
+                                }
+                                h=0;
                             }
-                            h=0;
                         }
                     }
                     if(i<asme.getMida()-1 && j<asme.getMida()-1){
                         if(asme.getColor(i+1, j+1)==asme.getColor(i, j) ){
                             da+=1;
                         }else{
-                            if(maxdame<da){
-                                maxdame=da;
+                            if(asme.getColor(i+1, j+1)!=0){
+                                if(maxdame<da){
+                                    maxdame=da;
+                                }
+                                da=0;
                             }
-                            da=0;
                         }
                     }
                     if(i>0 && j>0){
                         if(asme.getColor(i-1, j-1)==asme.getColor(i, j) ){
                             de+=1;
                         }else{
-                            if(maxdeme<de){
-                                maxdame=de;
+                            if(asme.getColor(i-1, j-1)!=0){
+                                if(maxdeme<de){
+                                    maxdeme=de;
+                                }
+                                de=0;
                             }
-                            de=0;
                         }
                     }
                 }
@@ -114,54 +121,69 @@ public class C4
                         if(asme.getColor(i+1, j)==asme.getColor(i, j) ){
                             ve+=1;
                         }else{
-                            if(maxvhe<ve){
-                                maxvhe=ve;
+                            if(asme.getColor(i+1, j)!=0){
+                                if(maxvhe<ve){
+                                    maxvhe=ve;
+                                }
+                                ve=0;
                             }
-                            ve=0;
                         }  
                     }
                     if(j<asme.getMida()-1){
                         if(asme.getColor(i, j+1)==asme.getColor(i, j) ){
                             he+=1;
                         }else{
-                            if(maxhhe<he){
-                                maxhhe=he;
-                            }
-                            he=0;
+                            if(asme.getColor(i, j+1)!=0){
+                                if(maxhhe<he){
+                                    maxhhe=he;
+                                }
+                                he=0;
+                                }
                         }
                     }
                     if(i<asme.getMida()-1 && j<asme.getMida()-1){
                         if(asme.getColor(i+1, j+1)==asme.getColor(i, j) ){
                             dae+=1;
                         }else{
-                            if(maxdahe<dae){
-                                maxdahe=dae;
+                            if(asme.getColor(i+1, j+1)!=0){
+                                if(maxdahe<dae){
+                                    maxdahe=dae;
+                                }
+                                dae=0;
                             }
-                            dae=0;
                         }
                     }
                     if(i>0 && j>0){
                         if(asme.getColor(i-1, j-1)==asme.getColor(i, j) ){
                             dee+=1;
                         }else{
-                            if(maxdehe<dee){
-                                maxdehe=dee;
+                            if(asme.getColor(i-1, j-1)!=0){
+                                if(maxdehe<dee){
+                                    maxdehe=dee;
+                                }
+                                dee=0;
                             }
-                            dee=0;
                         }
                     }
                 }
             } 
         }
         
-        heuristica=((100* (maxdame+maxdeme+maxhme+maxvme) )/16) - ((100* (maxdahe+maxdehe+maxhhe+maxvhe) )/16);
+        heuristica=(((maxdame+maxdeme+maxhme+maxvme) )) - (( 2*(maxdahe+maxdehe+maxhhe+maxvhe) ));
         if(asme.solucio(col, color)){
-            heuristica = 100;
-        }
-        Tauler aux = new Tauler(asenemy);
-        aux.afegeix(col, color*-1);
-        if(aux.solucio(col, color*-1)){
-            heuristica = 100;
+            heuristica += 100;
+        }else{
+            Tauler aux = new Tauler(asenemy);
+            aux.afegeix(col, color*-1);
+            if(aux.solucio(col, color*-1)){
+                heuristica += 100;
+            }else if(asme.movpossible(col)){
+                Tauler aux2 = new Tauler(asme);
+                aux2.afegeix(col, color*-1);
+                if(aux2.solucio(col, color*-1)){
+                    heuristica -=100;
+                }
+            }
         }
         return heuristica;
     }
@@ -235,6 +257,7 @@ public class C4
        int heuristica_aux=-999999;
        int heuristica = -999999;
        String aux="";
+       String betters="";
        int col = (int)(t.getMida() * Math.random());
        //boolean be_aleatorian=((int)(t.getMida() * Math.random()))%2 == 0;
        for(int i = 0; i < t.getMida(); ++i){
@@ -246,10 +269,19 @@ public class C4
                 aux+="."+heuristica_aux;
                 if(heuristica_aux > heuristica){
                     heuristica = heuristica_aux;
+                    betters="";
+                    betters="."+col;
                     col = i;
+                }
+                if(heuristica_aux == heuristica){
+                    betters="."+col;
                 }
             }
         }
+       String Rockstars[] = betters.split(".");
+       int auximiliano=(int)((Rockstars.length-1) * Math.random());
+       System.out.println(betters);
+       System.out.println(auximiliano);
        System.out.println(aux);
       //System.out.println("->>>>>>>>>>>>>>>>>>>>>"+col);
       return col;
@@ -263,7 +295,7 @@ public class C4
         primerturno(t,color);
         int col;
         if(turno >= 2){
-            col=choosemove(t,color,4);
+            col=choosemove(t,color,8);
         }else{
             col=primeras2jugadas(t,color);
         }
