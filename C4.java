@@ -46,7 +46,7 @@ public class C4
             return heuristica;
     }
     
-    public int h(Tauler asme, Tauler asenemy, int color, int col){
+    /*public int h(Tauler asme, Tauler asenemy, int color, int col){
         int heuristica = 0;
         int da=0;
         int de=0;
@@ -93,7 +93,7 @@ public class C4
                     }
                     if(i<asme.getMida()-1 && j<asme.getMida()-1){
                         if(asme.getColor(i+1, j+1)==asme.getColor(i, j) ){
-                            da+=1;
+                            da+=2;
                         }else{
                             if(asme.getColor(i+1, j+1)!=0){
                                 if(maxdame<da){
@@ -105,7 +105,7 @@ public class C4
                     }
                     if(i>0 && j>0){
                         if(asme.getColor(i-1, j-1)==asme.getColor(i, j) ){
-                            de+=1;
+                            de+=2;
                         }else{
                             if(asme.getColor(i-1, j-1)!=0){
                                 if(maxdeme<de){
@@ -138,12 +138,12 @@ public class C4
                                     maxhhe=he;
                                 }
                                 he=0;
-                                }
+                            }
                         }
                     }
                     if(i<asme.getMida()-1 && j<asme.getMida()-1){
                         if(asme.getColor(i+1, j+1)==asme.getColor(i, j) ){
-                            dae+=1;
+                            dae+=2;
                         }else{
                             if(asme.getColor(i+1, j+1)!=0){
                                 if(maxdahe<dae){
@@ -155,7 +155,7 @@ public class C4
                     }
                     if(i>0 && j>0){
                         if(asme.getColor(i-1, j-1)==asme.getColor(i, j) ){
-                            dee+=1;
+                            dee+=2;
                         }else{
                             if(asme.getColor(i-1, j-1)!=0){
                                 if(maxdehe<dee){
@@ -169,23 +169,27 @@ public class C4
             } 
         }
         
-        heuristica=(((maxdame+maxdeme+maxhme+maxvme) )) - (( 2*(maxdahe+maxdehe+maxhhe+maxvhe) ));
+        heuristica=(((maxdame+maxdeme+maxhme+maxvme) )) - (( (maxdahe+maxdehe+maxhhe+maxvhe) ));
         if(asme.solucio(col, color)){
-            heuristica = 100;
-        }else{
-            Tauler aux = new Tauler(asenemy);
-            aux.afegeix(col, color*-1);
-            if(aux.solucio(col, color*-1)){
-                heuristica = 100;
-            }else if(asme.movpossible(col)){
-                Tauler aux2 = new Tauler(asme);
-                aux2.afegeix(col, color*-1);
-                if(aux2.solucio(col, color*-1)){
-                    heuristica = -100;
-                }
+            heuristica += 100;
+        }
+        Tauler aux = new Tauler(asenemy);
+        aux.afegeix(col, color*-1);
+        if(aux.solucio(col, color*-1)){
+            heuristica += 700;
+        }else if(asme.movpossible(col)){
+            Tauler aux2 = new Tauler(asme);
+            aux2.afegeix(col, color*-1);
+            if(aux2.solucio(col, color*-1)){
+                heuristica -=600;
             }
         }
         return heuristica;
+    }
+    
+    */
+    public int h(Tauler asme, Tauler asenemy, int color, int col){
+        return (int)Valoracion(asme,color);
     }
     
     public int minimax2 (int profundidad, Tauler t, int color, int True_Color, int col){ 
@@ -294,13 +298,149 @@ public class C4
         //System.out.println("__________________________");//System.out.println("__________________________");//System.out.println("__________________________");//System.out.println("__________________________");
         primerturno(t,color);
         int col;
-        if(turno >= 2){
+        //if(turno >= 2){
             col=choosemove(t,color,8);
-        }else{
-            col=primeras2jugadas(t,color);
-        }
+//        }else{
+//            col=primeras2jugadas(t,color);
+//        }
         return col;
     }
+    int AdyacenteVertical(Tauler t, int row, int col, int color, int nivel) {
+ 
+	int consecutivas = 0;
+
+	for (int i=row; i<t.getMida() && col<t.getMida() && col>=0; i++) {
+		if (t.getColor(i,col) == color)
+			consecutivas += 1;
+		else
+			break;
+	}
+
+	if (consecutivas >= nivel)
+		return 1;
+	else
+		return 0;
+
+}
+
+int AdyacenteHorizontal(Tauler t, int row, int col, int color, int nivel) {
+ 
+	int consecutivas = 0;
+
+	for (int j=col; j<t.getMida() && row<t.getMida() && row>=0; j++) {
+		if (t.getColor(row,j) == color)
+			consecutivas += 1;
+		else
+			break;
+	}
+
+	if (consecutivas >= nivel)
+		return 1;
+	else
+		return 0;
+
+}
+
+int AdyacenteDiagonal(Tauler t, int row, int col, int color, int nivel) {
+
+	int total = 0;
+
+	// Comprobamos los diagonales ascendentes
+	double consecutivas = 0;
+
+	int j = col;
+
+	for (int i=row; i<t.getMida();i++) {
+		if (j > t.getMida()-1) // Control para no pasarnos del maximo de columnas
+			break;
+		else if (t.getColor(i,j) == color)
+			consecutivas += 1;
+		else
+			break;
+		j+=1; // Incrementamos la columna cuando se incrementa la fila
+		
+	}
+
+	if (consecutivas >= nivel)
+		total += 1;
+
+	// Comprobamos los diagonales descendentes
+	consecutivas = 0;
+	j = col;
+	for (int i=row; i>=0; i--) {
+		if (j > t.getMida()-1) // Control para no pasarnos del maximo de columnas
+			break;
+		else if (t.getColor(i,j) == color)
+			consecutivas += 1;
+		else
+			break;
+		j+=1; // Incrementamos la columna cuando se decrementa la fila
+
+	}
+
+	if (consecutivas >= nivel)
+		total += 1;
+
+	return total;
+
+}
+
+
+int ComprobarAdyacentes(Tauler t, int color, int nivel) {
+
+	int count = 0;
+
+	// Para cada ficha del tablero...
+	for (int i=0; i<t.getMida();i++) { 
+		for (int j=0; j<t.getMida();j++) { 
+
+			// ...si es del color del jugador...
+			if (t.getColor(i,j) == color) {
+				// Comprueba los verticales de la columna
+				count += AdyacenteVertical(t, i, j, color, nivel);
+				
+				// Comprueba los horizontales de la fila
+				count += AdyacenteHorizontal(t, i, j, color, nivel);
+				
+				// Comprueba los diagonales (los dos tipos)
+				count += AdyacenteDiagonal(t, i, j, color, nivel);
+			}
+		}
+	}
+
+	// Devolvemos la suma de los adyacentes encontrados para el "nivel"
+	return count;
+
+}
+
+
+// Funcion heuristica (ESTA ES LA QUE TENEIS QUE MODIFICAR)
+double Valoracion(Tauler t, int color){
+
+	// La valoracion es un número resultante de la suma de:
+	// total de 4 en raya * 1000000) + total de 3 en raya * 100 + total de 2 en raya * 10
+	// al que le restamos:
+	// total de 4 en raya del opuesto * 10000000, el total de 3 en raya del opuesto * 100 y el total de 2 en raya del opuesto * 10
+
+	// Obtenemos el judador opuesto
+
+
+	// Comprobamos los adyacentes del jugador actual
+	int cuatros = ComprobarAdyacentes(t, color, 4);
+	int treses =  ComprobarAdyacentes(t, color, 3);
+	int doses =   ComprobarAdyacentes(t, color, 2);
+	
+	// Comprobamos los adyacentes del jugador opuesto
+	int cuatros_opuesto = ComprobarAdyacentes(t, color*-1, 4);
+	int treses_opuesto =  ComprobarAdyacentes(t, color*-1, 3);
+	int doses_opuesto =   ComprobarAdyacentes(t, color*-1, 2);
+
+	// Calculamos el valor heurístico del tablero
+	//return (cuatros*100000 + treses*100 + doses*10);
+	//return (cuatros*100000 + treses*100 + doses*10 + unos);
+	return (((cuatros*1000000 + treses*100 + doses*10) - cuatros_opuesto*10000000) - treses_opuesto*100) - doses_opuesto*10;
+
+}
 }
 
         /*
