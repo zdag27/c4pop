@@ -188,8 +188,34 @@ public class C4
     }
     
     */
+    public int urgot(Tauler asme, Tauler asenemy, int color, int col){
+        int heuristica=0;
+        int win=0;
+        int already_lose=0;
+        int ifckit=0;
+        Tauler auxenemy;
+        Tauler auxme=new Tauler(asme);
+        if(auxme.movpossible(col)){
+            auxme.afegeix(col, color);
+            if(auxme.solucio(col, color*-1)){
+                ifckit=2;
+            }
+        }
+        if(asme.solucio(col, color)){
+            win=1;
+        }
+        for (int i = 0; i < asme.getMida(); i++) {
+            if(asme.solucio(i, color*-1)){
+                already_lose+=1;
+            }
+        }
+        heuristica=(win-ifckit)-already_lose;
+        return heuristica;
+    }
+    
     public int h(Tauler asme, Tauler asenemy, int color, int col){
-        return (int)Valoracion(asme,color);
+        //return (int)Valoracion(asme,color);
+        return urgot(asme, asenemy, color, col);
     }
     
     public int minimax2 (int profundidad, Tauler t, int color, int True_Color, int col){ 
