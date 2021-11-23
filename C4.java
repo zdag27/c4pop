@@ -9,15 +9,16 @@ package edu.epsevg.prop.lab.c4;
  *
  * @author clast
  */
-public class C4 
+public class c4 
     implements Jugador, IAuto{
     
     private String nombre;
     private int profundidad_inicial;
+    private boolean type_game;
     
 /**
  * Esta funcion es llamada cada vez que inicia el turno del jugador, se encarga de retornar la columna con mejor heuristica, es decir, la jugada que mas le beneficie al jugador, llama por cada ficha a la funcion minimax que devolvera la heuristica de esta ficha
- * haciendo una recursividad entre la funcion minimax2, min, max y como condicion final acabando en la funcion urgot.
+ * haciendo una recursividad entre la funcion minimax, min, max y como condicion final acabando en la funcion urgot.
 * @param t 
 * es el tauler actual
 * @param color 
@@ -27,19 +28,42 @@ public class C4
 */    
     @Override
     public int moviment(Tauler t, int color) {
-       int heuristica_aux=-999999;
-       int heuristica = -999999;
-       int col = (int)(t.getMida() * Math.random());
-       for(int i = 0; i < t.getMida(); ++i){
-           if(t.movpossible(i)){
-                heuristica_aux = minimax2(profundidad_inicial-1,t , color, color, i);
-                if(heuristica_aux > heuristica){
-                    heuristica = heuristica_aux;
-                    col = i;
+        int heuristica_aux=-999999;
+        int heuristica = -999999;
+        int alpha=-999999;
+        int beta=999999;
+        int col = (int)(t.getMida() * Math.random());
+        String s="";
+        if(type_game){
+            for (int i = 0; i < t.getMida(); i++) { 
+                if(t.movpossible(i)){
+                    heuristica_aux = alphabeta (profundidad_inicial-1, t, color, color, i,alpha,beta);
+                    if(heuristica_aux > heuristica){
+                        heuristica = heuristica_aux;
+                        col=i;
+                    }
+                    alpha = Math.max( alpha, heuristica);
+                    if(beta <= alpha){
+                        break;
+                    }
+                    s+="heuristica:"+heuristica_aux+" columna:"+i+" ";
+                }
+            }
+        }else{
+            for(int i = 0; i < t.getMida(); ++i){
+               if(t.movpossible(i)){
+                    heuristica_aux = minimax(profundidad_inicial-1,t , color, color, i);
+                    if(heuristica_aux > heuristica){
+                        heuristica = heuristica_aux;
+                        col = i;
+                    }
+                    s+="heuristica:"+heuristica_aux+" columna:"+i+" ";
                 }
             }
         }
-      return col;
+        System.out.println(s);
+        System.out.println("Jugada seleccionada heuristica:"+heuristica+" columna:"+col+" ");
+        return col;
     }
     
 /**
@@ -54,13 +78,14 @@ public class C4
 * @param prof 
 * parametro entero que a de ser un numero mayor o igual a 1 representa la profundidad maxima que revisara en el arbol (la usada contra el profe es el 8)
 */   
-    public C4 (int prof){
+    public c4 (int prof,boolean b){
         nombre = "C4";
         profundidad_inicial=prof;
+        type_game=b;
     }
     
 /**
- * la funcion de minimax2 es la parte parametrica de nuestro algoritmo, se encarga de llamar a las funciones segun los casos correspondientes, llamando a max en el turno aliado, min en el turno enemigo y la heuristica (urgot)
+ * la funcion de minimax es la parte parametrica de nuestro algoritmo, se encarga de llamar a las funciones segun los casos correspondientes, llamando a max en el turno aliado, min en el turno enemigo y la heuristica (urgot)
  * y retorna la heuristiuca actual, Ademas de insertar la ficha en la columna deseada
 * @param profundidad
 * es la profundidad actual
@@ -75,11 +100,63 @@ public class C4
 * @return int heuristica
 * retorna la heuristica de la jugada para la columna col
 */    
-    public int minimax2 (int profundidad, Tauler t, int color, int True_Color, int col){ 
+public int alphabeta (int profundidad, Tauler t, int color, int True_Color, int col,int alpha,int beta){
+    int heuristica = 0;
+    Tauler asme = new Tauler (t);
+    asme.afegeix(col, color);
+    if(profundidad == 0 || asme.solucio(col, color) || !asme.espotmoure()){
+        heuristica= urgot(asme,t,color,col);
+        if(color!=True_Color)
+            heuristica=-1*heuristica;
+    }else{
+        if(True_Color != color){ //max
+            heuristica = -999999;
+            for (int i = 0; i < asme.getMida(); i++) { 
+                if(asme.movpossible(i)){
+                    heuristica = Math.max(heuristica, alphabeta (profundidad-1, asme, color*-1, True_Color, i,alpha,beta)); 
+                    alpha = Math.max( alpha, heuristica);
+                    if(beta <= alpha){
+                        break;
+                    }
+                }
+            }
+        }else{ //min
+            heuristica = 999999;
+            for (int i = 0; i < asme.getMida(); i++) { 
+                if(asme.movpossible(i)){
+                    heuristica = Math.min(heuristica, alphabeta (profundidad-1, asme, color*-1, True_Color, i,alpha,beta)); 
+                    beta = Math.min( beta, heuristica);
+                    if(beta <= alpha){
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return heuristica;
+}
+    
+/**
+ * la funcion de minimax es la parte parametrica de nuestro algoritmo, se encarga de llamar a las funciones segun los casos correspondientes, llamando a max en el turno aliado, min en el turno enemigo y la heuristica (urgot)
+ * y retorna la heuristiuca actual, Ademas de insertar la ficha en la columna deseada
+* @param profundidad
+* es la profundidad actual
+* @param t
+* es el tablero actual
+* @param color
+* es el color de la jugada que estamos investigando ahora
+* @param True_Color
+* es el color del jugador aliado
+* @param col
+* es la columna donde insertamos la ficha
+* @return int heuristica
+* retorna la heuristica de la jugada para la columna col
+*/    
+    public int minimax (int profundidad, Tauler t, int color, int True_Color, int col){ 
         int heuristica = 0;
         Tauler asme = new Tauler (t);
         asme.afegeix(col, color);
-        if(profundidad == 0 || asme.solucio(col, color) || !t.espotmoure()){
+        if(profundidad == 0 || asme.solucio(col, color) || !asme.espotmoure()){
             heuristica= urgot(asme,t,color,col);
             if(color!=True_Color)
                 heuristica=-1*heuristica;
@@ -113,7 +190,7 @@ public class C4
         int heuristica = 999999;
         for(int i = 0; i < t.getMida(); ++i){
             if(t.movpossible(i)){
-                heuristica = Math.min (heuristica, minimax2(profundidad-1, t, color*-1, True_Color, i));
+                heuristica = Math.min (heuristica, minimax(profundidad-1, t, color*-1, True_Color, i));
             }
         }
         return heuristica;
@@ -136,7 +213,7 @@ public class C4
             int heuristica = -999999;  
                 for(int i = 0; i < t.getMida(); ++i){
                     if(t.movpossible(i)){
-                        int miniaux = minimax2(profundidad-1, t, color*-1, True_Color, i);
+                        int miniaux = minimax(profundidad-1, t, color*-1, True_Color, i);
                         heuristica = Math.max (heuristica, miniaux );  
                         
                     }
